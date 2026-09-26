@@ -13,6 +13,17 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
   <link rel="stylesheet" href="assets/styles.css">
+  <script>
+    // The Lekhpal Pro app opens these pages with ?theme=dark|light so they follow its
+    // own theme toggle; remembered for links followed within the site.
+    try {
+      var t = new URLSearchParams(location.search).get("theme") || sessionStorage.getItem("lp-theme");
+      if (t === "dark" || t === "light") {
+        document.documentElement.setAttribute("data-theme", t);
+        sessionStorage.setItem("lp-theme", t);
+      }
+    } catch (e) {}
+  </script>
 </head>
 <body>
 
