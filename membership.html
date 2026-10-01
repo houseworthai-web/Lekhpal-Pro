@@ -1,0 +1,439 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Lekhpal Pro · Membership</title>
+  <meta name="description" content="Buy or extend your Lekhpal Pro membership.">
+  <meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0E1116" media="(prefers-color-scheme: dark)">
+  <!--
+    Deliberately NOT linked from index.html or any policy page. The app opens those
+    pages in an in-app WebView, and a path from there to a checkout would be steering
+    users to an outside payment — against Google Play's Payments policy. Share this
+    URL directly (WhatsApp, support replies), never from inside the app.
+  -->
+  <meta name="robots" content="noindex">
+  <link rel="icon" type="image/png" href="assets/logo.png">
+  <link rel="apple-touch-icon" href="assets/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="assets/styles.css">
+  <style>
+    .plans { list-style: none; margin: 0 0 16px; padding: 0; display: grid; gap: 12px; }
+    .plan {
+      display: block; position: relative; cursor: pointer;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 16px;
+    }
+    .plan input { position: absolute; opacity: 0; pointer-events: none; }
+    .plan:has(input:checked) { border: 2px solid var(--navy); padding: 15px; background: var(--navy-overlay); }
+    .plan:has(input:focus-visible) { outline: 2px solid var(--navy); outline-offset: 2px; }
+    .plan-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+    .plan-name { font-weight: 600; color: var(--text); font-size: 17px; }
+    .plan-days { color: var(--muted); font-size: 13px; }
+    .plan-price { text-align: right; white-space: nowrap; }
+    .plan-price strong { font-size: 22px; color: var(--navy); }
+    .plan-price s { color: var(--muted); font-size: 13px; display: block; }
+    .plan .pill { margin-top: 6px; }
+    .plan ul { margin: 12px 0 0; }
+    .account-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+    .account-row p { margin: 0; }
+    .linkish { background: none; border: 0; padding: 0; color: var(--navy); font: inherit; cursor: pointer; text-decoration: underline; }
+    .status { margin: 0 0 16px; }
+    .msg { margin: 12px 0 0; font-size: 14px; }
+    .msg.error { color: var(--error); }
+    .field { display: block; margin: 0 0 12px; font-weight: 500; color: var(--text); }
+    .field input {
+      display: block; width: 100%; margin-top: 6px; padding: 12px 14px;
+      font: inherit; font-weight: 400; color: var(--text); background: var(--surface);
+      border: 1px solid var(--divider); border-radius: var(--radius-sm);
+    }
+    .field input:focus { outline: 2px solid var(--navy); outline-offset: 1px; }
+    .field small { display: block; margin-top: 4px; font-weight: 400; color: var(--muted); }
+    [hidden] { display: none !important; }
+  </style>
+  <script>
+    try {
+      var t = new URLSearchParams(location.search).get("theme") || sessionStorage.getItem("lp-theme");
+      if (t === "dark" || t === "light") {
+        document.documentElement.setAttribute("data-theme", t);
+        sessionStorage.setItem("lp-theme", t);
+      }
+    } catch (e) {}
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap">
+    <span class="brand">
+      <svg viewBox="88 96 216 208" aria-hidden="true"><path fill="currentColor" fill-rule="evenodd" d="M102 105h16a6 6 0 0 1 6 6v141h53V111a6 6 0 0 1 6-6h62a6 6 0 0 1 6 6v85a6 6 0 0 1-6 6h-40v72a6 6 0 0 1-6 6H102a6 6 0 0 1-6-6V111a6 6 0 0 1 6-6ZM205 132v44h18v-44Z"/><circle cx="279" cy="281" r="17" style="fill:var(--logo-dot)"/></svg>
+      Lekhpal Pro
+    </span>
+    <a class="topbar-link" href="mailto:support.lekhpalpro@gmail.com">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>
+      Contact
+    </a>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="hero">
+    <p class="eyebrow">Membership</p>
+    <h1>Lekhpal Pro membership</h1>
+    <p class="lede">Membership unlocks Work automation in the Lekhpal Pro app. Plans are prepaid and do not renew automatically.</p>
+  </section>
+
+  <!-- Step 1: sign in with the same Google account as the app -->
+  <section class="card" id="signin-card">
+    <h2 style="margin-top:0">Sign in</h2>
+    <p>Sign in with the <strong>same Google account you use in the app</strong>. Your membership is added to that account.</p>
+    <div class="btn-row">
+      <button class="btn btn-primary" id="signin-btn" type="button">Continue with Google</button>
+    </div>
+  </section>
+
+  <section id="buy" hidden>
+    <div class="card">
+      <div class="account-row">
+        <p>Signed in as <strong id="user-email"></strong></p>
+        <button class="linkish" id="signout-btn" type="button">Not you? Sign out</button>
+      </div>
+    </div>
+
+    <div class="callout status" id="status" hidden>
+      <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg></span>
+      <div><p id="status-text"></p></div>
+    </div>
+
+    <!-- Referral: a new account may enter one code; it takes money off the first purchase -->
+    <div class="callout status" id="ref-note" hidden>
+      <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg></span>
+      <div><p id="ref-note-text"></p></div>
+    </div>
+    <div class="card" id="ref-entry" hidden>
+      <label class="field">Referral code (optional)
+        <input id="ref-code" type="text" autocomplete="off" autocapitalize="characters" maxlength="6" placeholder="6-character code">
+        <small>Got a code from a friend? Apply it before paying to get a discount on your first plan.</small>
+      </label>
+      <div class="btn-row">
+        <button class="btn btn-outline" id="ref-btn" type="button">Apply code</button>
+      </div>
+      <p class="msg" id="ref-msg" role="status"></p>
+    </div>
+
+    <h2>Choose a plan</h2>
+    <ul class="plans" id="plans"><li class="plan-days">Loading plans…</li></ul>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" id="pay-btn" type="button" disabled>Pay</button>
+    </div>
+    <p class="msg" id="msg" role="status"></p>
+    <p class="plan-days">Payments are processed securely by Razorpay (UPI, cards, net banking, wallets). By paying you agree to our <a href="terms-and-conditions.html">Terms</a> and <a href="refund-policy.html">Refund Policy</a>.</p>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="wrap">
+    <nav aria-label="Policies">
+      <a href="privacy-policy.html">Privacy</a>
+      <a href="terms-and-conditions.html">Terms</a>
+      <a href="refund-policy.html">Refunds</a>
+      <a href="disclaimer.html">Disclaimer</a>
+    </nav>
+    <p>© 2026 Lekhpal Pro India Private Limited · Lucknow, Uttar Pradesh, India</p>
+    <p><a href="mailto:support.lekhpalpro@gmail.com">support.lekhpalpro@gmail.com</a></p>
+  </div>
+</footer>
+
+<script>
+(function () {
+  // Public values only. The anon key ships inside the APK too; Row Level Security
+  // and the SECURITY DEFINER functions are what protect the data, not this key.
+  var SUPABASE_URL = "https://kklrsbcnheuawbremcjy.supabase.co";
+  var SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtrbHJzYmNuaGV1YXdicmVtY2p5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIzMTk5NTYsImV4cCI6MjA5Nzg5NTk1Nn0.TnCWNW51ngRr1FoaSGluY4Ti61c00z5YF9UcuWaHbgw";
+
+  var sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  var $ = function (id) { return document.getElementById(id); };
+  var plans = [];
+  var selectedKey = null;
+  var paying = false;
+  // Rupees off this account's first purchase, from get_my_referral(). Display only:
+  // razorpay-order recomputes it server-side when it creates the order.
+  var discount = 0;
+
+  function setMsg(text, isError) {
+    $("msg").textContent = text || "";
+    $("msg").className = "msg" + (isError ? " error" : "");
+  }
+
+  function fmtDate(iso) {
+    try {
+      return new Date(iso + "T00:00:00").toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+    } catch (e) { return iso; }
+  }
+
+  // Returns the active plan's end_date, or null.
+  async function currentEndDate() {
+    var r = await sb.rpc("get_my_entitlement");
+    if (r.error) throw r.error;
+    var sub = r.data && r.data.status === "active" ? r.data.subscription : null;
+    return sub ? sub.end_date : null;
+  }
+
+  async function showStatus() {
+    try {
+      var end = await currentEndDate();
+      $("status").hidden = !end;
+      if (end) {
+        $("status-text").textContent = "Your membership is active until " + fmtDate(end) +
+          ". Buying another plan adds its days after that date.";
+      }
+    } catch (e) { $("status").hidden = true; }
+  }
+
+  function selectedPlan() {
+    return plans.find(function (p) { return p.plan_key === selectedKey; }) || null;
+  }
+
+  // What the selected plan will actually cost — mirrors razorpay-order.
+  function payable(p) {
+    return discount > 0 ? Math.max(1, p.price_inr - discount) : p.price_inr;
+  }
+
+  function updatePayButton() {
+    var p = selectedPlan();
+    $("pay-btn").disabled = !p || paying;
+    $("pay-btn").textContent = p ? "Pay ₹" + payable(p) : "Pay";
+  }
+
+  function el(tag, cls, text) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text != null) n.textContent = text;
+    return n;
+  }
+
+  async function loadPlans() {
+    var r = await sb.rpc("list_plans");
+    var list = $("plans");
+    list.textContent = "";
+    if (r.error || !r.data || !r.data.length) {
+      list.appendChild(el("li", "msg error", "Plans could not be loaded. Please refresh the page."));
+      return;
+    }
+    plans = r.data;
+    selectedKey = plans[0].plan_key;
+    renderPlans();
+  }
+
+  function renderPlans() {
+    var list = $("plans");
+    list.textContent = "";
+    plans.forEach(function (p) {
+      var li = el("li");
+      var label = el("label", "plan");
+      var input = document.createElement("input");
+      input.type = "radio"; input.name = "plan"; input.value = p.plan_key;
+      input.checked = p.plan_key === selectedKey;
+      input.addEventListener("change", function () { selectedKey = p.plan_key; updatePayButton(); });
+
+      var head = el("div", "plan-head");
+      var left = el("div");
+      left.appendChild(el("div", "plan-name", p.plan_name));
+      left.appendChild(el("div", "plan-days", p.duration_days + " days access"));
+      var pill = p.discount_label || p.badge;
+      if (pill) left.appendChild(el("span", "pill", pill));
+      var right = el("div", "plan-price");
+      var cost = payable(p);
+      var struck = p.mrp_inr || (cost < p.price_inr ? p.price_inr : null);
+      if (struck) right.appendChild(el("s", null, "₹" + struck));
+      right.appendChild(el("strong", null, "₹" + cost));
+      head.appendChild(left); head.appendChild(right);
+
+      label.appendChild(input); label.appendChild(head);
+      if (p.features && p.features.length) {
+        var ul = el("ul", "bullets");
+        p.features.forEach(function (f) { ul.appendChild(el("li", null, f)); });
+        label.appendChild(ul);
+      }
+      li.appendChild(label);
+      list.appendChild(li);
+    });
+    updatePayButton();
+  }
+
+  var REF_MESSAGES = {
+    invalid_code: "That code was not found. Please check it and try again.",
+    own_code: "You cannot use your own referral code.",
+    already_applied: "A referral code has already been used on this account.",
+    too_late: "Referral codes can only be added in the first few days after signing up.",
+    already_purchased: "Referral codes can only be added before your first purchase.",
+    disabled: "Referral codes are not being accepted right now."
+  };
+
+  function setRefMsg(text, isError) {
+    $("ref-msg").textContent = text || "";
+    $("ref-msg").className = "msg" + (isError ? " error" : "");
+  }
+
+  // Reads this account's referral state: whether it may still enter a code, and
+  // the discount its first purchase gets. Never blocks buying if it fails.
+  async function loadReferral() {
+    var ref = null;
+    try {
+      var r = await sb.rpc("get_my_referral");
+      if (!r.error) ref = r.data;
+    } catch (e) {}
+    discount = ref && ref.discount_inr > 0 ? ref.discount_inr : 0;
+    $("ref-entry").hidden = !(ref && ref.can_enter_code);
+    $("ref-note").hidden = !discount;
+    if (discount) {
+      $("ref-note-text").textContent = "Referral discount applied: ₹" + discount + " off your first plan.";
+    }
+    if (plans.length) { renderPlans(); updatePayButton(); }
+  }
+
+  async function applyReferral() {
+    var code = $("ref-code").value.trim().toUpperCase();
+    if (!code) { setRefMsg("Please enter a referral code.", true); return; }
+    $("ref-btn").disabled = true; setRefMsg("Checking…");
+    var r = await sb.rpc("apply_referral_code", { p_code: code });
+    $("ref-btn").disabled = false;
+    var status = r.data && r.data.status;
+    if (r.error || !status) { setRefMsg("Could not check the code. Please try again.", true); return; }
+    if (status !== "applied") { setRefMsg(REF_MESSAGES[status] || "This code cannot be used.", true); return; }
+    setRefMsg("");
+    loadReferral();
+  }
+
+  function wait(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+
+  function showDone(end) {
+    paying = false; updatePayButton();
+    setMsg("Done! Your membership is active until " + fmtDate(end) +
+      ". In the app, open Account → Membership and tap Refresh status.");
+    showStatus();
+    loadReferral();   // the first-purchase discount is now used up
+  }
+
+  // Asks the server to check the order with Razorpay and activate it if paid.
+  async function verifyOrder(orderId) {
+    var r = await sb.functions.invoke("razorpay-order", { body: { action: "verify", order_id: orderId } });
+    return r.error ? null : r.data;
+  }
+
+  // After checkout the plan is activated server-side — by this check or by the
+  // webhook, whichever lands first. The page only reports success once the server
+  // actually has it. Some payments (UPI especially) stay pending for a short while,
+  // hence the retries.
+  async function finishOrder(orderId, previousEnd) {
+    setMsg("Checking your payment…");
+    for (var i = 0; i < 10; i++) {
+      var v = await verifyOrder(orderId);
+      if (v && v.status === "active") return showDone(v.end_date);
+      if (v && v.status === "refund_needed") {
+        paying = false; updatePayButton();
+        setMsg("Your payment went through but the plan could not be activated. You will get a full refund — " +
+          "please email support.lekhpalpro@gmail.com with order " + orderId + ".", true);
+        return;
+      }
+      await wait(3000);
+    }
+    // The webhook may have activated it even if the checks above did not see it.
+    try {
+      var end = await currentEndDate();
+      if (end && end !== previousEnd) return showDone(end);
+    } catch (e) {}
+    paying = false; updatePayButton();
+    setMsg("The payment is not complete yet. If money was debited, your membership will activate " +
+      "automatically within a few minutes — please do not pay again. Questions? Email " +
+      "support.lekhpalpro@gmail.com with order " + orderId + ".", true);
+  }
+
+  async function pay() {
+    var p = selectedPlan();
+    if (!p || paying) return;
+    paying = true; updatePayButton(); setMsg("Starting payment…");
+
+    var previousEnd = null;
+    try { previousEnd = await currentEndDate(); } catch (e) {}
+
+    var r = await sb.functions.invoke("razorpay-order", {
+      body: { action: "create", plan_key: p.plan_key }
+    });
+    var order = r.data;
+    if (r.error || !order || !order.order_id) {
+      var detail = "";
+      try { detail = (await r.error.context.json()).error; } catch (e) {}
+      paying = false; updatePayButton();
+      setMsg(detail || "Could not start the payment. Please try again.", true);
+      return;
+    }
+
+    setMsg("");
+    var checkout;
+    try {
+      checkout = new Razorpay({
+        key: order.key_id,
+        order_id: order.order_id,
+        amount: order.amount,
+        currency: order.currency,
+        name: "Lekhpal Pro",
+        description: order.plan_name,
+        prefill: { email: order.email },
+        theme: { color: "#16365C" },
+        // Paid. The ids Razorpay hands back are not trusted: the server re-reads
+        // the order from Razorpay before activating anything.
+        handler: function () { finishOrder(order.order_id, previousEnd); },
+        modal: {
+          // Closed without the handler firing. Check once anyway — a payment can
+          // succeed even when the window is closed right after paying.
+          ondismiss: async function () {
+            var v = await verifyOrder(order.order_id);
+            if (v && v.status === "active") return showDone(v.end_date);
+            paying = false; updatePayButton();
+            setMsg("Payment was not completed. No money was taken.", true);
+          }
+        }
+      });
+      checkout.open();
+    } catch (e) {
+      paying = false; updatePayButton();
+      setMsg("Could not open the payment window. Please refresh the page and try again.", true);
+    }
+  }
+
+  async function render(session) {
+    var signedIn = !!(session && session.user);
+    $("signin-card").hidden = signedIn;
+    $("buy").hidden = !signedIn;
+    if (!signedIn) return;
+    $("user-email").textContent = session.user.email || "";
+    showStatus();
+    if (!plans.length) await loadPlans();
+    loadReferral();
+  }
+
+  $("signin-btn").addEventListener("click", function () {
+    sb.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: location.origin + location.pathname, queryParams: { prompt: "select_account" } }
+    });
+  });
+  $("signout-btn").addEventListener("click", async function () {
+    await sb.auth.signOut();
+    render(null);
+  });
+  $("pay-btn").addEventListener("click", pay);
+  $("ref-btn").addEventListener("click", applyReferral);
+
+  sb.auth.onAuthStateChange(function (_event, session) { render(session); });
+})();
+</script>
+</body>
+</html>
