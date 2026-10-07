@@ -46,7 +46,7 @@
     <h1>Privacy Policy</h1>
     <p class="lede">What we collect when you use Lekhpal Pro, why we collect it, and how you stay in control of it.</p>
     <div class="meta">
-      <span class="pill">Last updated: 26 September 2026</span>
+      <span class="pill">Last updated: 5 October 2026</span>
     </div>
   </section>
 
@@ -54,7 +54,7 @@
     <h2>In short</h2>
     <ul class="bullets">
       <li>You sign in with Google. We store your name, email address and profile photo.</li>
-      <li>Your government portal <strong>passwords</strong> are encrypted and never leave your phone.</li>
+      <li>Your government portal <strong>passwords</strong> are encrypted on your phone and sent only to the official portal when you log in, never to our servers.</li>
       <li>Your portal <strong>login ID</strong> is sent to our server so that one ID can only be used by one Lekhpal Pro account.</li>
       <li>We never sell your data. You can delete your account at any time from inside the app.</li>
     </ul>
@@ -104,9 +104,19 @@
           <span class="tag">On your phone only</span>
         </li>
         <li>
+          <span class="title">Files selected for document tools</span>
+          <span class="detail">Images and PDFs you select are resized or converted on your phone. We do not upload their contents or filenames to our servers. Temporary working copies are kept in the app's private cache; originals are unchanged. You choose where to save a new copy or which app receives it when you share.</span>
+          <span class="tag">On your phone only</span>
+        </li>
+        <li>
           <span class="title">Subscription and payment records</span>
           <span class="detail">The plan you bought, the amount, start and end dates, and the payment reference from our payment gateway. Your card, UPI and bank details go directly to the payment gateway and never reach our servers.</span>
           <span class="tag">Stored on our servers</span>
+        </li>
+        <li>
+          <span class="title">Billing state or union territory</span>
+          <span class="detail">If you choose Razorpay through Google Play's billing-choice screen, we ask for your billing state or union territory and send it with the transaction report to Google Play for tax and fee calculation.</span>
+          <span class="tag">Stored on our servers and reported to Google</span>
         </li>
         <li>
           <span class="title">Notification token</span>
@@ -132,8 +142,8 @@
       <div class="callout">
         <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span>
         <div>
-          <p><strong>What we do not collect:</strong> your location, contacts, photos, files, SMS or call logs, or hardware identifiers such as your IMEI.</p>
-          <p>The app asks for only three permissions: internet access, network status and notifications.</p>
+          <p><strong>What we do not collect:</strong> precise GPS location, contacts, photos from your gallery, SMS or call logs, or hardware identifiers such as your IMEI. Google advertising and analytics services may infer approximate location from your IP address.</p>
+          <p>The app requests notification permission. It also uses internet and network status access; bundled Google services may declare advertising and service permissions.</p>
         </div>
       </div>
     </section>
@@ -173,7 +183,7 @@
     <section class="section" id="security">
       <h2><span class="num">06</span>Storage and security</h2>
       <ul class="bullets">
-        <li>All data travels over encrypted HTTPS connections.</li>
+        <li>Account, billing and credential autofill use encrypted HTTPS connections. Some older government portal pages or resources may use unencrypted HTTP; avoid entering personal information on an HTTP page.</li>
         <li>Our database uses row-level security, so each account can read only its own records.</li>
         <li>Portal passwords are encrypted with a key held in your phone's secure hardware.</li>
         <li>Our servers may be located outside India. Wherever they are, we protect your data as described in this policy.</li>
@@ -184,6 +194,8 @@
     <section class="section" id="retention">
       <h2><span class="num">07</span>How long we keep it</h2>
       <p>We keep your information for as long as your account is active. When you delete your account, your profile, subscription records, payment records, portal ID link and notification tokens are deleted from our database immediately.</p>
+      <p>A referral record may retain a fingerprint of your lower-cased email address after account deletion to prevent repeated referral rewards. This is pseudonymous data, not anonymous data. It remains while the associated referrer's account exists, and is removed when that account is deleted.</p>
+      <p>For payments made through Google Play's billing-choice screen using Razorpay, we detach the account link but retain the reporting token, transaction reference, amount, time and billing state until the required report is accepted by Google. Detached reporting records are removed within 30 days after a successful report. Abandoned unpaid reporting records are removed within 30 days after account deletion.</p>
       <p>Analytics data held by Google is kept for a limited period under Google's own retention settings. Our payment gateway keeps transaction records for as long as banking and tax laws require.</p>
       <p>See <a href="delete-account.html">Delete your account</a> for the full details.</p>
     </section>
@@ -235,7 +247,8 @@
       <a href="delete-account.html">Delete account</a>
     </nav>
     <p>© 2026 Lekhpal Pro India Private Limited · Lucknow, Uttar Pradesh, India</p>
-    <p><a href="mailto:support.lekhpalpro@gmail.com">support.lekhpalpro@gmail.com</a></p>
+    <p>Developed by FitCode.Labs</p>
+    <p><a href="mailto:support.lekhpalpro@gmail.com">support.lekhpalpro@gmail.com</a> · <a href="tel:+918076722865">+91 8076722865</a> (12 PM to 8 PM IST)</p>
   </div>
 </footer>
 
